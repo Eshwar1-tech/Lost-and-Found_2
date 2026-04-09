@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Post Found Item</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-900 to-slate-800 min-h-screen flex items-center justify-center">
+
+<div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg">
+
+<h2 class="text-2xl font-bold text-center text-blue-900 mb-6">
+📦 Report Found Item
+</h2>
+
+<form id="form" class="space-y-4">
+
+<!-- PERSONAL DETAILS -->
+<input placeholder="Full Name" required class="w-full p-3 border rounded-lg">
+<input placeholder="Phone Number" required class="w-full p-3 border rounded-lg">
+<input placeholder="Roll Number" required class="w-full p-3 border rounded-lg">
+<input placeholder="Year (e.g., 2nd Year)" required class="w-full p-3 border rounded-lg">
+<input placeholder="Department (e.g., CSE)" required class="w-full p-3 border rounded-lg">
+
+<!-- ITEM DETAILS -->
+<input placeholder="Item Name (e.g., Mobile, ID Card)" required class="w-full p-3 border rounded-lg">
+<input placeholder="Model Name (e.g., Redmi Note 10)" class="w-full p-3 border rounded-lg">
+
+<input placeholder="Found Location (e.g., Library, Canteen)" required class="w-full p-3 border rounded-lg">
+
+<input type="date" required class="w-full p-3 border rounded-lg">
+
+<textarea placeholder="Describe the item (color, cover, scratches, stickers, etc.)"
+class="w-full p-3 border rounded-lg"></textarea>
+
+<!-- QR -->
+<label class="text-sm font-semibold">Upload QR Code Image (optional)</label>
+<input type="file" accept="image/*" class="w-full p-2 border rounded-lg">
+
+<!-- IMAGE -->
+<label class="text-sm font-semibold">Upload Item Image</label>
+<input type="file" accept="image/*" class="w-full p-2 border rounded-lg">
+
+<!-- BUTTON -->
+<button type="submit"
+class="w-full bg-blue-900 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+Submit Found Item
+</button>
+
+</form>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAv6e14kxuK5PtbLNvP9HEvWDMHOVWjrWg",
+authDomain: "lost-found-system-732ba.firebaseapp.com",
+projectId: "lost-found-system-732ba"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const form = document.getElementById("form");
+
+form.addEventListener("submit", async (e) => {
+e.preventDefault();
+if (form[1].value.length !== 10) {
+    alert("Enter valid phone number");
+    return;
+  }
+
+const data = {
+  name: form[0].value.trim(),
+  phno: form[1].value.trim(),
+  roll: form[2].value.trim(),
+  year: form[3].value.trim(),
+  dept: form[4].value.trim(),
+  itemName: form[5].value.trim(),
+  model: form[6].value.trim(),
+  location: form[7].value.trim(),
+  date: form[8].value,
+  description: form[9].value.trim(),
+  qr: form[10].files[0] ? form[10].files[0].name : "",
+  createdAt: new Date()
+};
+
+try {
+await addDoc(collection(db, "foundItems"), data);
+
+// redirect
+window.location.href = "success.html";
+
+} catch (error) {
+alert("Error: " + error.message);
+}
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100 min-h-screen">
+
+<nav class="bg-blue-900 text-white p-4 flex justify-between">
+<h1>Lost & Found Dashboard</h1>
+<button id="logoutBtn" class="bg-red-500 px-4 py-1 rounded">Logout</button>
+</nav>
+
+<div class="p-6 grid gap-6">
+
+<div class="bg-white p-6 rounded-xl text-center shadow hover:scale-105 transition">
+<h3>📦 Post Lost Item</h3>
+<button onclick="location.href='post-lost.html'" class="bg-blue-800 text-white px-4 py-2 mt-2 rounded">Go</button>
+</div>
+
+<div class="bg-white p-6 rounded-xl text-center shadow hover:scale-105 transition">
+<h3>🔍 Post Found Item</h3>
+<button onclick="location.href='post-found.html'" class="bg-blue-800 text-white px-4 py-2 mt-2 rounded">Go</button>
+</div>
+
+<div class="bg-white p-6 rounded-xl text-center shadow hover:scale-105 transition">
+<h3>📋 View Items</h3>
+<button onclick="location.href='view-items.html'" class="bg-blue-800 text-white px-4 py-2 mt-2 rounded">Go</button>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAv6e14kxuK5PtbLNvP9HEvWDMHOVWjrWg",
+authDomain: "lost-found-system-732ba.firebaseapp.com",
+projectId: "lost-found-system-732ba"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, user => {
+if(!user) location.href="index.html";
+});
+
+document.getElementById("logoutBtn").onclick = async ()=>{
+await signOut(auth);
+location.href="index.html";
+};
+</script>
+
+</body>
+</html>

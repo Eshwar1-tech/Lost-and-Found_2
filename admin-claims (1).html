@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin - Claims</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+
+<div class="flex items-center justify-between mb-6">
+
+  <!-- LEFT SIDE -->
+  <h2 class="text-xl font-semibold text-gray-800">
+    🛠 Admin - Claims
+  </h2>
+
+  <!-- RIGHT SIDE BUTTONS -->
+  <div class="flex gap-2">
+
+    <button onclick="location.href='admin.html'"
+      class="bg-blue-600 text-white px-3 py-1.5 text-sm rounded-lg shadow hover:bg-blue-700">
+      📦 Found
+    </button>
+
+    <button onclick="location.href='view-lost.html'"
+      class="bg-purple-600 text-white px-3 py-1.5 text-sm rounded-lg shadow hover:bg-purple-700">
+      🔍 Lost
+    </button>
+
+  </div>
+
+</div>
+
+<div id="container" class="grid gap-4"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { initializeFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAv6e14kxuK5PtbLNvP9HEvWDMHOVWjrWg",
+  authDomain: "lost-found-system-732ba.firebaseapp.com",
+  projectId: "lost-found-system-732ba"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+const auth = getAuth(app);
+
+const ADMIN_EMAIL = "admin@gmail.com";
+const container = document.getElementById("container");
+
+// 🔐 ADMIN CHECK
+onAuthStateChanged(auth, (user) => {
+  if (!user || user.email.toLowerCase() !== ADMIN_EMAIL) {
+    alert("Access denied");
+    window.location.href = "index.html";
+    return;
+  }
+  loadClaims();
+});
+
+
+// 🤖 CLAIM ↔ FOUND MATCH
+function calculateMatch(claim, found) {
+  let score = 0;
+
+  const item = claim.itemName?.toLowerCase();
+
+  if (item.includes("id")) {
+    if (claim.name?.toLowerCase() === found.name?.toLowerCase()) score += 30;
+    if (claim.roll === found.roll) score += 30;
+    if (claim.dept?.toLowerCase() === found.dept?.toLowerCase()) score += 20;
+    if (claim.year === found.year) score += 10;
+    if (claim.location?.toLowerCase() === found.location?.toLowerCase()) score += 10;
+  } else {
+    if (claim.itemName?.toLowerCase() === found.itemName?.toLowerCase()) score += 25;
+    if (claim.model?.toLowerCase() === found.model?.toLowerCase()) score += 20;
+    if (claim.location?.toLowerCase() === found.location?.toLowerCase()) score += 20;
+    if (claim.date === found.date) score += 15;
+  }
+
+  return score;
+}
+
+
+// 🔥 LOST ↔ FOUND MATCH
+function calculateLostMatch(lost, found) {
+  let score = 0;
+
+  if (lost.itemName?.toLowerCase() === found.itemName?.toLowerCase()) score += 30;
+  if (lost.model?.toLowerCase() === found.model?.toLowerCase()) score += 20;
+  if (lost.location?.toLowerCase() === found.location?.toLowerCase()) score += 20;
+  if (lost.date === found.date) score += 15;
+
+  return score;
+}
+
+
+// 🚀 LOAD CLAIMS
+async function loadClaims() {
+
+  const claimSnap = await getDocs(collection(db, "claims"));
+  const foundSnap = await getDocs(collection(db, "foundItems"));
+  const lostSnap = await getDocs(collection(db, "lostItems"));
+
+  const foundItems = [];
+  const lostItems = [];
+
+  foundSnap.forEach(doc => {
+    foundItems.push({ id: doc.id, ...doc.data() });
+  });
+
+  lostSnap.forEach(doc => {
+    lostItems.push({ id: doc.id, ...doc.data() });
+  });
+
+  let results = [];
+
+  claimSnap.forEach((d) => {
+    const data = d.data();
+
+    let bestMatch = 0;
+    let bestLostMatch = 0;
+
+    // 🔹 Claim ↔ Found
+    foundItems.forEach(item => {
+      const score = calculateMatch(data, item);
+      if (score > bestMatch) bestMatch = score;
+    });
+
+    // 🔹 Lost ↔ Found
+    lostItems.forEach(lost => {
+      foundItems.forEach(found => {
+        const score = calculateLostMatch(lost, found);
+        if (score > bestLostMatch) bestLostMatch = score;
+      });
+    });
+
+    results.push({ id: d.id, ...data, match: bestMatch, lostMatch: bestLostMatch });
+  });
+
+  // 🔥 SORT BY CLAIM MATCH
+  results.sort((a, b) => b.match - a.match);
+
+  container.innerHTML = "";
+
+  if (results.length === 0) {
+    container.innerHTML = `<p class="text-center">No claims</p>`;
+    return;
+  }
+
+  results.forEach(data => {
+
+    const card = document.createElement("div");
+    card.className = "bg-white p-5 rounded-xl shadow";
+
+    card.innerHTML = `
+      <h3 class="font-bold text-lg">${data.itemName}</h3>
+
+      <p><b>👤 Name:</b> ${data.name}</p>
+      <p><b>📞 Phone:</b> ${data.phno || "N/A"}</p>
+      <p><b>🎓 Roll:</b> ${data.roll}</p>
+      <p><b>📍 Location:</b> ${data.location}</p>
+
+      <p><b>🤖 Claim Match:</b> 
+        <span class="font-bold text-blue-600">
+        ${data.match}%
+        </span>
+      </p>
+
+      <p><b>🔍 Lost Match:</b> 
+        <span class="font-bold text-purple-600">
+        ${data.lostMatch}%
+        </span>
+      </p>
+
+      <p class="mt-2"><b>Status:</b> 
+        <span class="text-yellow-600">${data.status}</span>
+      </p>
+
+      <div class="flex gap-2 mt-3">
+        <button class="approve bg-green-600 text-white px-3 py-1 rounded">
+          ✅ Handed Over
+        </button>
+
+        <button class="reject bg-red-600 text-white px-3 py-1 rounded">
+          ❌ Reject
+        </button>
+      </div>
+    `;
+
+    // ✅ HANDOVER
+    card.querySelector(".approve").onclick = async () => {
+      await updateDoc(doc(db, "claims", data.id), {
+        status: "handed_over"
+      });
+      alert("Item handed over ✅");
+      loadClaims();
+    };
+
+    // ❌ REJECT
+    card.querySelector(".reject").onclick = async () => {
+      await updateDoc(doc(db, "claims", data.id), {
+        status: "rejected"
+      });
+      alert("Rejected ❌");
+      loadClaims();
+    };
+
+    container.appendChild(card);
+  });
+}
+</script>
+
+</body>
+</html>

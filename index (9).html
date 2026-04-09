@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lost & Found - Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="relative min-h-screen flex items-center justify-center">
+
+<div class="absolute inset-0">
+<img src="mlrit.jpg" class="w-full h-full object-cover" />
+<div class="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-slate-900/70"></div>
+</div>
+
+<div class="relative bg-white shadow-2xl rounded-2xl p-8 w-96 z-10">
+
+<h2 class="text-2xl font-bold text-center text-blue-900 mb-4">
+Lost & Found System
+</h2>
+
+<form id="form" class="space-y-4">
+
+<input type="email" placeholder="Email" required class="w-full p-3 border rounded-lg">
+
+<input type="password" placeholder="Password" required class="w-full p-3 border rounded-lg">
+
+<button class="w-full bg-blue-900 text-white py-3 rounded-lg">
+Login / Register
+</button>
+
+</form>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAv6e14kxuK5PtbLNvP9HEvWDMHOVWjrWg",
+authDomain: "lost-found-system-732ba.firebaseapp.com",
+projectId: "lost-found-system-732ba",
+storageBucket: "lost-found-system-732ba.firebasestorage.app",
+messagingSenderId: "137101012358",
+appId: "1:137101012358:web:dcd8ab66730f891be25007"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const form = document.getElementById("form");
+
+// 🔥 ADMIN EMAIL
+const ADMIN_EMAIL = "admin@gmail.com";
+
+form.addEventListener("submit", async (e) => {
+e.preventDefault();
+
+const email = form[0].value.trim().toLowerCase();
+const password = form[1].value;
+
+if(password.length < 6){
+alert("Password must be 6+ characters");
+return;
+}
+
+try {
+const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+alert("Login Successful!");
+
+const user = userCredential.user;
+
+// 🔥 REDIRECT LOGIC
+if (user.email.toLowerCase() === ADMIN_EMAIL) {
+  window.location.href = "admin.html";
+} else {
+  window.location.href = "dashboard.html";
+}
+
+} catch {
+try {
+const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+alert("Account Created!");
+
+const user = userCredential.user;
+
+// 🔥 REDIRECT AFTER REGISTER ALSO
+if (user.email.toLowerCase() === ADMIN_EMAIL) {
+  window.location.href = "admin.html";
+} else {
+  window.location.href = "dashboard.html";
+}
+
+} catch(err){
+alert(err.message);
+}
+}
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Success</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-green-500 to-emerald-700 min-h-screen flex items-center justify-center">
+
+<div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-96">
+
+<h2 class="text-2xl font-bold text-green-700 mb-4">
+✅ Submission Successful!
+</h2>
+
+<p class="text-gray-600 mb-6">
+Your details have been successfully submitted to the Lost & Found System.
+</p>
+
+<div class="space-y-3">
+
+<button onclick="location.href='dashboard.html'"
+class="w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-700">
+🏠 Go to Dashboard
+</button>
+
+<button onclick="location.href='view-items.html'"
+class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+📋 View Items
+</button>
+
+<button onclick="location.href='post-found.html'"
+class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+➕ Post Another Item
+</button>
+
+<button onclick="showInfo()"
+class="w-full bg-gray-200 py-2 rounded-lg hover:bg-gray-300">
+ℹ️ Know More About System
+</button>
+
+</div>
+
+</div>
+
+<script>
+function showInfo(){
+alert(
+"📌 Your submission will be reviewed by the admin.\n\n" +
+"🔍 Our system compares lost & found details to find matches.\n\n" +
+"🔐 Only verified owners can collect items (physical proof required).\n\n" +
+"🚫 No third person can claim items without proper verification."
+);
+}
+</script>
+
+</body>
+</html>

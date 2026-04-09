@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Post Lost Item</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-red-900 to-slate-800 min-h-screen flex items-center justify-center">
+
+<div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg">
+
+<h2 class="text-2xl font-bold text-center text-red-800 mb-6">
+🚨 Report Lost Item
+</h2>
+
+<form id="form" class="space-y-4">
+
+<!-- PERSONAL DETAILS -->
+<input placeholder="Full Name" required class="w-full p-3 border rounded-lg">
+<input placeholder="Phone Number" required class="w-full p-3 border rounded-lg">
+<input placeholder="Roll Number" required class="w-full p-3 border rounded-lg">
+<input placeholder="Year" required class="w-full p-3 border rounded-lg">
+<input placeholder="Department" required class="w-full p-3 border rounded-lg">
+
+<!-- ITEM DETAILS -->
+<input placeholder="Item Name (e.g., Mobile, ID Card)" required class="w-full p-3 border rounded-lg">
+<input placeholder="Model (if applicable)" class="w-full p-3 border rounded-lg">
+<input placeholder="Lost Location" required class="w-full p-3 border rounded-lg">
+
+<input type="date" required class="w-full p-3 border rounded-lg">
+
+<textarea placeholder="Describe your item (color, cover, stickers, etc.)"
+class="w-full p-3 border rounded-lg"></textarea>
+
+<!-- OPTIONAL QR -->
+<label class="text-sm font-semibold">QR Code (optional)</label>
+<input type="file" class="w-full p-2 border rounded-lg">
+
+<!-- OPTIONAL IMAGE -->
+<label class="text-sm font-semibold">Item Image (optional)</label>
+<input type="file" class="w-full p-2 border rounded-lg">
+
+<!-- SUBMIT -->
+<button type="submit"
+class="w-full bg-red-700 text-white py-3 rounded-lg hover:bg-red-600">
+Submit Lost Item
+</button>
+
+</form>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { initializeFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAv6e14kxuK5PtbLNvP9HEvWDMHOVWjrWg",
+  authDomain: "lost-found-system-732ba.firebaseapp.com",
+  projectId: "lost-found-system-732ba"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true
+});
+
+const form = document.getElementById("form");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // ✅ Phone validation
+  if (!/^[0-9]{10}$/.test(form[1].value)) {
+    alert("Enter valid 10-digit phone number");
+    return;
+  }
+
+  const data = {
+    name: form[0].value.trim(),
+    phno: form[1].value.trim(),
+    roll: form[2].value.trim(),
+    year: form[3].value.trim(),
+    dept: form[4].value.trim(),
+    itemName: form[5].value.trim(),
+    model: form[6].value.trim(),
+    location: form[7].value.trim(),
+    date: form[8].value,
+    description: form[9].value.trim(),
+    qr: form[10].files[0] ? form[10].files[0].name : "",
+    image: form[11].files[0] ? form[11].files[0].name : "",
+    status: "lost",
+    createdAt: new Date()
+  };
+
+  try {
+    await addDoc(collection(db, "lostItems"), data);
+
+    alert("✅ Lost item reported successfully!");
+
+    window.location.href = "dashboard.html";
+
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Lost Items</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+
+<h2 class="text-2xl font-bold mb-6 text-center">
+🔍 Lost Items
+</h2>
+
+<div id="container" class="grid gap-4"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { initializeFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAv6e14kxuK5PtbLNvP9HEvWDMHOVWjrWG",
+  authDomain: "lost-found-system-732ba.firebaseapp.com",
+  projectId: "lost-found-system-732ba"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+
+const container = document.getElementById("container");
+
+async function loadLostItems() {
+
+  const snap = await getDocs(collection(db, "lostItems"));
+
+  container.innerHTML = "";
+
+  if (snap.empty) {
+    container.innerHTML = `<p class="text-center">No lost items</p>`;
+    return;
+  }
+
+  snap.forEach(doc => {
+    const data = doc.data();
+
+    const card = document.createElement("div");
+    card.className = "bg-white p-5 rounded-xl shadow";
+
+    card.innerHTML = `
+      <h3 class="font-bold text-lg">${data.itemName}</h3>
+
+      <p><b>👤 Name:</b> ${data.name || "N/A"}</p>
+      <p><b>📞 Phone:</b> ${data.phno || "N/A"}</p>
+      <p><b>📍 Location:</b> ${data.location || "N/A"}</p>
+      <p><b>📅 Date:</b> ${data.date || "N/A"}</p>
+
+      <p class="mt-2 text-gray-600">${data.description || ""}</p>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+loadLostItems();
+</script>
+
+</body>
+</html>
